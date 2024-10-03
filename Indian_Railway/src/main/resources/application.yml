@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: indian-railway
+  config:
+    import: optional:configserver:http://localhost:8888

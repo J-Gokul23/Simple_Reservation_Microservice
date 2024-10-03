@@ -1,0 +1,115 @@
+//Passenger-Reservation Notes
+1."http://localhost:8882/rail"
+2.${spring.config.indianrailway-url}"
+3.try to use @FeignClient(name = "indianrailway",url = "http://localhost:8882/rail")
+    instead of
+    @FeignClient(name = "indianrailway",url = "${spring.config.indianrailway-url}" )
+4.see whether all dependencies are downloaded correctly
+5.If you are getting values or any results from one microservice to another microservice through fienclient means
+try to use the HttpStatusCode.Ok
+6.If you use other status code like HttpStatusCode.FOUND it will give error(feign.FeignException: [302] during [GET])
+7.Example
+  (Indian-Railway.Service class)
+  public ResponseEntity<TrainWrapper> Get_TrainWrapper_ByTrainNumber(int trainNumber) {
+          TrainDetails trainDetails = trainDetailsRepo.findByTrain_Number(trainNumber);
+          TrainWrapper trainWrapper = new TrainWrapper();
+          trainWrapper.setNo_stopping_stations(trainDetails.getNo_of_stoppingstations());
+          return new ResponseEntity<>(trainWrapper,HttpStatus.OK);
+  (Passenger Reservation.Service class)
+  public ResponseEntity<TrainWrapper> Get_TrainWrapper_ByTrainNumber(int trainNumber) {
+         TrainWrapper trainWrapper = passengerFiegn.get_trainwrapper_bytrain_number(trainNumber).getBody();
+         TrainWrapper trainWrapper1 = new TrainWrapper();
+         return new ResponseEntity<>(trainWrapper1,HttpStatus.OK);
+8.Should not use any return type method in the repository interface
+ eg.@Transactional
+        @Modifying
+        @Query(value = "update train_details set no_ac_tickets = ?2 where train_number = ?1",nativeQuery = true)
+        TrainDetails updateTrainTicket(int trainnumber,int no_of_tickets);
+ eg. @Transactional
+        @Modifying
+        @Query(value = "update train_details set no_ac_tickets = ?2 where train_number = ?1",nativeQuery = true)
+        void updateTrainTicket(int trainnumber,int no_of_tickets);
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+//Config-client Notes
+1.  profiles:
+      active: native
+By activating the native profile,
+you're instructing the Config Server to look for configuration files on your local machine or
+within your project’s classpath.
+2.the (Spring.application.name) is should same for the yml file in the configurations file like eg:(Eureka-Server,gateway)
+should match with spring.application.name
+3.Copy all configurations from normal from their properties file to configuration from configserver.
+4.In Configuration file remove only (config:
+                                         import: optional:configserver:http://localhost:8888)
+5.In their own properties file remove all configurations exception (spring:
+                                                                      application:
+                                                                        name: gateway
+                                                                      config:
+                                                                        import: optional:configserver:http://localhost:8888)
+6.In Configuration file in configserver should have all configuration coding except this
+(config:
+  import: optional:configserver:http://localhost:8888)
+7.In their own Properties file should have only
+(spring:
+  application:
+   name: gateway
+  config:
+   import: optional:configserver:http://localhost:8888)
+8.And you need start the services by order
+    1.Start Config-server (Because configserver have the all configurations)
+    2.Start Eureka server
+    3.Start Indain-railway (Because passenger reservation have fiegn client or indian railway,so it is depend on indian railway)
+    4.start passenger-railway(Because it is depend on indian railway)
+    5.start gateway.
+9.@EnableConfigServer
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+//Eureka-Server Notes
+1.When your adding api gateway through spring initializer it is give wrong pom file
+ <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-gateway-mvc</artifactId>
+    </dependency>
+this is wrong prom file
+2. use this.
+<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-gateway</artifactId>
+			<version>4.1.0</version>
+3.When you using this you should not add spring web dependency pom file
+4. (- id: "Spring.application.name" in the microservice) eg.spring.application.name = indian-railways
+5. (uri: lb://spring application name in the eureka server)eb. INDIAN-RAILWAY in eureka server
+6.(spring.cloud.gateway.routes) use this when your using (uri: lb:// INDIAN-RAILWAY)
+7.(spring.cloud.gateway.discovery.locator.routes) use this when your using (uri: http://localhost:8881)
+8.you will get the
+                    spring:
+                      cloud:
+                       gateway:
+                         discovery:
+                           locator:
+                             enabled: true
+ suggestion only when your using without web dependency and NO.2 dependency
+9. API gateway is working with format   cloud:
+                                          gateway:
+                                            discovery:
+                                              locator:
+                                                enabled: true
+                                            routes:
+                                              - id: passenger-reservation
+                                                uri: http://localhost:8881
+                                                predicates:
+                                                  - Path=/app/**
+                                              - id: indian-railway
+                                                uri: http://localhost:8882
+                                                predicates:
+                                                  - Path=/rail/**
+and
+                                            routes:
+                                              - id: passenger-reservation
+                                                uri: lb://PASSENGER-RESERVATION
+                                                predicates:
+                                                  - Path=/app/**
+                                              - id: lb://INDIAN-RAILWAY
+                                                uri: http://localhost:8882
+                                                predicates:
+                                                  - Path=/rail/**
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
