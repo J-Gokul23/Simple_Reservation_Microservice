@@ -120,35 +120,26 @@ public class ServiceClass {
              Message = Ac_ticket_booking(trainNumber,ticket_Available,noOfTickets,passengerTicketBooking);
              if(Message.equalsIgnoreCase("success")){
                  passengerTicketBooking1(passengerTicketBooking,coach.toUpperCase()+" Ticket :"+noOfTickets,trainNumber);
-                 //passengerTicketBooking.setNo_of_tickets("Ac Ticket : "+noOfTickets);
              }
-             /*passengerTicketBooking.setNo_ac_tickets(noOfTickets);
-             passengerTicketBooking.setNo_general_reserve_tickets(0);
-             passengerTicketBooking.setNo_sleeper_tickets(0);*/
+
         } else if (coach.trim().equalsIgnoreCase("Sleeper")) {
             ticket_Available = trainReservationSystem.getNo_sleeper_tickets();
-//            ticket_booking1(trainNumber,ticket_Available,noOfTickets);
+
             Message = Ac_ticket_booking(trainNumber,ticket_Available,noOfTickets,passengerTicketBooking);
             if(Message.equalsIgnoreCase("success")){
                 passengerTicketBooking1(passengerTicketBooking,coach.toUpperCase()+" Ticket :"+noOfTickets,trainNumber);
-                // passengerTicketBooking.setNo_of_tickets("Ac Ticket : "+noOfTickets);
+
             }
-            //passengerTicketBooking.setNo_of_tickets("Sleeper Ticket : "+noOfTickets);
-            /*passengerTicketBooking.setNo_sleeper_tickets(noOfTickets);
-            passengerTicketBooking.setNo_ac_tickets(0);
-            passengerTicketBooking.setNo_general_reserve_tickets(0);*/
+
         }else {
             ticket_Available = trainReservationSystem.getNo_general_reserve_tickets();
-           // Message = ticket_booking1(trainNumber,ticket_Available,noOfTickets);
+
             Message = Ac_ticket_booking(trainNumber,ticket_Available,noOfTickets,passengerTicketBooking);
             if(Message.equalsIgnoreCase("success")){
                 passengerTicketBooking1(passengerTicketBooking,coach.toUpperCase()+" Ticket :"+noOfTickets,trainNumber);
                 //   passengerTicketBooking.setNo_of_tickets("Ac Ticket : "+noOfTickets);
             }
-           // passengerTicketBooking.setNo_of_tickets("General_Reserve Ticket : "+noOfTickets);
-            /*passengerTicketBooking.setNo_general_reserve_tickets(noOfTickets);
-            passengerTicketBooking.setNo_ac_tickets(0);
-            passengerTicketBooking.setNo_sleeper_tickets(0);*/
+
         }
         if(Message.equalsIgnoreCase("Success")){
             return new ResponseEntity<>(passengerTicketBooking,HttpStatus.OK);
